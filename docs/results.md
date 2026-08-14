@@ -27,6 +27,8 @@ Example shape:
     {
       "problem_id": 1,
       "correct": true,
+      "model_response": "<answer>B</answer>",
+      "reasoning_text": "Provider-exposed reasoning text, when available.",
       "tokens": {
         "prompt_tokens": 80,
         "reasoning_tokens": 420,
@@ -48,6 +50,11 @@ Example shape:
 
 Provider token reporting differs. OckBench normalizes known fields into this
 schema so runs can be compared consistently.
+
+`reasoning_text` is separate from `model_response` and is never passed to the
+evaluator. It contains the exact streamed reasoning text only when the provider
+exposes such an event; otherwise it is `null`. The corresponding token count can
+still be nonzero when a provider reports reasoning usage without exposing text.
 
 ## OckScore
 

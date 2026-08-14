@@ -58,6 +58,7 @@ class OpenAIClient(BaseModelClient):
     async def _dispatch(self, request: Dict[str, Any]) -> ModelResponse:
         try:
             text = ""
+            reasoning_parts = []
             reasoning_chars = 0
             finish_reason = None
             model_name = self.model
@@ -76,6 +77,7 @@ class OpenAIClient(BaseModelClient):
                         if reasoning_delta is None and getattr(delta, "model_extra", None):
                             reasoning_delta = delta.model_extra.get("reasoning_content")
                         if reasoning_delta:
+                            reasoning_parts.append(reasoning_delta)
                             reasoning_chars += len(reasoning_delta)
                     if chunk.choices[0].finish_reason:
                         finish_reason = chunk.choices[0].finish_reason
@@ -100,6 +102,7 @@ class OpenAIClient(BaseModelClient):
 
             return ModelResponse(
                 text=text,
+                reasoning_text="".join(reasoning_parts) or None,
                 tokens=tokens,
                 latency=0,
                 model=model_name,

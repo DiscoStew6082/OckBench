@@ -145,3 +145,17 @@ def test_reasoning_delta_does_not_pollute_answer_text():
     _, resp = _drive(body)
     assert resp.error is None
     assert resp.text == "42"
+    assert resp.reasoning_text == "let me think"
+
+
+def test_multiple_reasoning_deltas_are_retained_in_order():
+    body = _sse([
+        {"type": "response.reasoning_text.delta", "delta": "first "},
+        {"type": "response.reasoning_text.delta", "delta": "second"},
+        {"type": "response.output_text.delta", "delta": "answer"},
+        {"type": "response.completed",
+         "response": {"model": "m", "status": "completed", "usage": responses_usage()}},
+    ])
+    _, resp = _drive(body)
+    assert resp.reasoning_text == "first second"
+    assert resp.text == "answer"

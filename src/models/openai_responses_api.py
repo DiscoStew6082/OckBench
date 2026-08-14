@@ -67,6 +67,7 @@ class OpenAIResponsesClient(BaseModelClient):
     async def _dispatch(self, request: Dict[str, Any]) -> ModelResponse:
         try:
             text = ""
+            reasoning_parts = []
             reasoning_chars = 0
             model_name = self.model
             usage_payload = {}
@@ -108,7 +109,9 @@ class OpenAIResponsesClient(BaseModelClient):
                                 text += d.get("delta", "")
 
                             elif event_type == "response.reasoning_text.delta":
-                                reasoning_chars += len(d.get("delta", "") or "")
+                                reasoning_delta = d.get("delta", "") or ""
+                                reasoning_parts.append(reasoning_delta)
+                                reasoning_chars += len(reasoning_delta)
 
                             elif event_type in terminal_events:
                                 resp_data = d.get("response", {})
@@ -158,7 +161,8 @@ class OpenAIResponsesClient(BaseModelClient):
                 finish_reason = f"incomplete:{incomplete_reason}"
 
             return ModelResponse(
-                text=text, tokens=tokens, latency=0, model=model_name,
+                text=text, reasoning_text="".join(reasoning_parts) or None,
+                tokens=tokens, latency=0, model=model_name,
                 finish_reason=finish_reason, error=error,
             )
 

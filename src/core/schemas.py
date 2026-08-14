@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # Result/cache schema version. Bump when the on-disk result or cache shape
 # changes in a way that affects reproducibility or aggregation.
-SCHEMA_VERSION = "2.0"
+SCHEMA_VERSION = "2.1"
 
 
 class RequestOverrides(BaseModel):
@@ -171,6 +171,9 @@ class TokenUsage(BaseModel):
 
 class ModelResponse(BaseModel):
     text: str = Field(...)
+    # Provider-streamed reasoning/thinking text, kept separate from the visible
+    # answer so evaluators never score it. Not every provider exposes this.
+    reasoning_text: Optional[str] = Field(None)
     tokens: TokenUsage = Field(...)
     latency: float = Field(...)
     model: str = Field(...)
@@ -185,6 +188,9 @@ class EvaluationResult(BaseModel):
     ground_truth: Any = Field(...)
 
     model_response: str = Field(...)
+    # Exact provider-streamed reasoning text when available. Additive and
+    # optional so older cache/result files remain readable.
+    reasoning_text: Optional[str] = Field(None)
     extracted_answer: Optional[Any] = Field(None)
 
     correct: bool = Field(...)

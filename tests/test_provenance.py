@@ -30,6 +30,7 @@ def _make_experiment():
     )
     results = [EvaluationResult(
         problem_id="AMO-0", question="q", ground_truth="6", model_response="<answer>6</answer>",
+        reasoning_text="hidden reasoning",
         extracted_answer="6", correct=True,
         tokens=TokenUsage(prompt_tokens=80, answer_tokens=125, reasoning_tokens=420,
                           output_tokens=545, total_tokens=625),
@@ -72,6 +73,7 @@ def test_result_file_carries_full_provenance():
                 "total_output_tokens", "total_tokens"):
         assert key in s
     assert data["results"][0]["tokens"]["reasoning_tokens"] == 420
+    assert data["results"][0]["reasoning_text"] == "hidden reasoning"
 
 
 def test_result_missing_identity_fails_to_load():

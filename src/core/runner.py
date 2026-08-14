@@ -83,6 +83,7 @@ class BenchmarkRunner:
         eval_result: EvalResult,
         *,
         model_response: str,
+        reasoning_text: Optional[str],
         tokens: TokenUsage,
         latency: float,
         finish_reason: Optional[str],
@@ -91,6 +92,7 @@ class BenchmarkRunner:
         return EvaluationResult(
             **problem_fields,
             model_response=model_response,
+            reasoning_text=reasoning_text,
             extracted_answer=eval_result.extracted_answer,
             correct=eval_result.is_correct,
             tokens=tokens,
@@ -146,7 +148,8 @@ class BenchmarkRunner:
                     logger.error(f"Error for problem {problem.id}: {error_msg}")
                     result = EvaluationResult(
                         **problem_fields,
-                        model_response=response.text or "", extracted_answer=None, correct=False,
+                        model_response=response.text or "", reasoning_text=response.reasoning_text,
+                        extracted_answer=None, correct=False,
                         tokens=response.tokens, latency=response.latency, error=error_msg,
                         extraction_method="error", finish_reason=response.finish_reason,
                     )
@@ -158,7 +161,8 @@ class BenchmarkRunner:
                         logger.error(f"Evaluator error for problem {problem.id}: {eval_result.error}")
                     result = self._result_from_eval(
                         problem_fields, eval_result,
-                        model_response=response.text, tokens=response.tokens,
+                        model_response=response.text, reasoning_text=response.reasoning_text,
+                        tokens=response.tokens,
                         latency=response.latency, finish_reason=response.finish_reason,
                     )
 
@@ -201,7 +205,8 @@ class BenchmarkRunner:
                         ground_truth=cached.ground_truth,
                     ),
                     eval_result,
-                    model_response=cached.model_response, tokens=cached.tokens,
+                    model_response=cached.model_response, reasoning_text=cached.reasoning_text,
+                    tokens=cached.tokens,
                     latency=cached.latency, finish_reason=cached.finish_reason,
                 )
             except Exception as e:

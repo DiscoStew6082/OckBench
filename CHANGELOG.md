@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased — local smoke runner and schema_version 2.1
+
+### Added
+
+- Preserve provider-streamed reasoning text separately from the visible model
+  response in result and cache rows; evaluators continue to score only the
+  visible response.
+- Add a disposable Docker runner and local-provider contract test for isolated
+  coding evaluation.
+- Add bounded Qwen3.8 oMLX profiles and an official-mini medium/low smoke
+  sequence with one 600-second attempt per problem.
+
+### Changed
+
+- Ignore generated local benchmark artifacts while retaining reproducible
+  source, configurations, tests, and run documentation.
+
 ## Unreleased — provider & evaluation rewrite (schema_version 2.0)
 
 A bold rewrite of the provider and evaluation layers. The scoring core (OckScore,

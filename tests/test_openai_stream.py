@@ -38,6 +38,7 @@ def test_reasoning_only_stream_without_finish_chunk_is_unknown_not_stop():
     assert resp.error is not None and "empty_response_reasoning_only" in resp.error
     assert "finish_reason=unknown" in resp.error
     assert resp.finish_reason is None
+    assert resp.reasoning_text == "thinking..."
 
 
 def test_length_budget_exhaustion_is_scoreable_not_error():
@@ -54,6 +55,7 @@ def test_length_budget_exhaustion_is_scoreable_not_error():
     assert resp.text == ""
     assert resp.finish_reason == "length"
     assert resp.tokens.reasoning_tokens == 100
+    assert resp.reasoning_text == "thinking..."
 
 
 def test_hidden_total_gap_length_empty_answer_is_scoreable():

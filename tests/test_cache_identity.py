@@ -10,8 +10,7 @@ import src.models.registry as registry
 from src.core.cache import CacheIdentityMismatch, RunCache, _migrate_legacy_error, aggregate_cache_file
 from src.core.identity import compute_run_identity
 from src.core.runner import BenchmarkRunner
-from src.core.schemas import (BenchmarkConfig, EvaluationResult, JudgeConfig, ModelResponse,
-                              TokenUsage)
+from src.core.schemas import BenchmarkConfig, EvaluationResult, JudgeConfig, ModelResponse, TokenUsage
 from src.evaluators.judge import JudgeVerdict
 from src.models.base import BaseModelClient
 from tests.transport_fakes import EmptyStrError
@@ -57,6 +56,7 @@ def _register_fixed_provider(name="fake-fixed", calls=None, dispatch=None):
                 return await dispatch(request)
             return ModelResponse(
                 text="<answer>6</answer>",
+                reasoning_text="hidden proof",
                 tokens=TokenUsage(prompt_tokens=10, answer_tokens=5, reasoning_tokens=15,
                                   output_tokens=20, total_tokens=30),
                 latency=0, model=self.model, finish_reason="stop",
@@ -276,12 +276,14 @@ def test_judge_outage_recorded_as_error_and_retried(monkeypatch):
             assert all(r.evaluator_error for r in exp.results)
             assert all(r.error is None for r in exp.results)
             assert exp.results[0].model_response == "<answer>6</answer>"  # model tokens/text preserved
+            assert exp.results[0].reasoning_text == "hidden proof"
             calls_first = judge.calls
             assert calls_first == 2
 
             # Resume: the outaged problems were not completed -> they are re-judged.
-            BenchmarkRunner(_config(provider, ds), cache_path=cache_path).run()
+            resumed = BenchmarkRunner(_config(provider, ds), cache_path=cache_path).run()
             assert judge.calls > calls_first
+            assert resumed.results[0].reasoning_text == "hidden proof"
     finally:
         registry._PROVIDER_REGISTRY.pop(provider, None)
 
