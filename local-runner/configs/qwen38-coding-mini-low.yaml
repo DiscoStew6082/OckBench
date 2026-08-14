@@ -1,0 +1,30 @@
+provider: openai-responses
+model: Qwen3.8-27B-oQ8-mtp
+api_key: dummy
+base_url: http://host.docker.internal:8000/v1
+dataset_path: /bench/data/OckBench_coding_mini.jsonl
+dataset_name: OckBench_coding_mini
+dataset_split: mini
+evaluator_type: code
+max_output_tokens: 32768
+temperature: 1.0
+top_p: 0.95
+concurrency: 1
+timeout: 120
+wall_clock_timeout: 600
+max_retries: 1
+execution_timeout: 10
+request_overrides:
+  set:
+    presence_penalty: 0.0
+    top_p: 0.95
+    top_k: 20
+    min_p: 0.0
+    repetition_penalty: 1.0
+    seed: 42
+    store: false
+    chat_template_kwargs.enable_thinking: true
+    chat_template_kwargs.preserve_thinking: true
+    chat_template_kwargs.reasoning_effort: low
+experiment_name: qwen3.8-27b-oq8-mtp-omlx-coding-mini-low
+notes: Official ten-row OckBench coding smoke subset; low reasoning; 32K total-output cap; one 600-second attempt; generated code executes only inside the disposable benchmark container; not an official OckBench score.

@@ -42,6 +42,7 @@ logs/
 
 # Results
 results/
+artifacts/
 
 # Data artifacts
 *.bak

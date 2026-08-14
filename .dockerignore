@@ -1,0 +1,8 @@
+.git
+.venv
+artifacts
+local-runner/*
+!local-runner/ockbench_local
+!local-runner/ockbench_local/**
+**/__pycache__
+**/*.pyc

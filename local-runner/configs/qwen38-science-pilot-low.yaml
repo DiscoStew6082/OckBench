@@ -1,0 +1,29 @@
+provider: openai-responses
+model: Qwen3.8-27B-oQ8-mtp
+api_key: dummy
+base_url: http://host.docker.internal:8000/v1
+dataset_path: /local/pilots/OckBench_Science_Selected_pilot_1.jsonl
+dataset_name: OckBench_Science_Selected_pilot_1
+dataset_split: Selected-pilot-1
+evaluator_type: science
+max_output_tokens: 32768
+temperature: 1.0
+top_p: 0.95
+concurrency: 1
+timeout: 120
+wall_clock_timeout: 1800
+max_retries: 1
+request_overrides:
+  set:
+    presence_penalty: 0.0
+    top_p: 0.95
+    top_k: 20
+    min_p: 0.0
+    repetition_penalty: 1.0
+    seed: 42
+    store: false
+    chat_template_kwargs.enable_thinking: true
+    chat_template_kwargs.preserve_thinking: true
+    chat_template_kwargs.reasoning_effort: low
+experiment_name: qwen3.8-27b-oq8-mtp-omlx-science-pilot-low
+notes: Exact oMLX-advertised model id is verified before inference; official Qwen thinking-mode sampling; low reasoning; MTP and native-kernel evidence required before full execution.

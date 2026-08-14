@@ -1,0 +1,17 @@
+provider: lmstudio-native
+model: qwen3.5-9b-mtp
+api_key: dummy
+base_url: http://host.docker.internal:1234
+dataset_path: /bench/data/OckBench_Coding_Selected.jsonl
+dataset_name: OckBench_Coding_Selected
+dataset_split: Selected
+evaluator_type: code
+max_output_tokens: 8192
+temperature: 0.0
+concurrency: 1
+timeout: 120
+wall_clock_timeout: 180
+max_retries: 1
+execution_timeout: 10
+experiment_name: qwen3.5-9b-mtp-lmstudio-ockbench-selected-coding-reasoning-off
+notes: Constrained local Selected profile; exact model id; external provider uses LM Studio native v1 chat with reasoning explicitly off; MTP remains enabled at the loaded LM Studio instance; generated code executes only in the disposable container.
