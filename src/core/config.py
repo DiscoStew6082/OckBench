@@ -24,6 +24,10 @@ def load_config(config_path: Optional[str] = None, **overrides) -> BenchmarkConf
     # Resolve env keys AFTER the YAML+override merge so the final provider/judge
     # (which may come from overrides) is what env resolution sees.
     config_dict = apply_env_keys(config_dict)
+    # Explicit local-runner revision handoff, never a wholesale environment dump.
+    for key in ("model_revision", "runtime_revision"):
+        if not config_dict.get(key):
+            config_dict[key] = os.environ.get(f"OCKBENCH_{key.upper()}") or None
 
     return BenchmarkConfig(**config_dict)
 
@@ -71,3 +75,4 @@ def save_config(config: BenchmarkConfig, output_path: str):
 
     with open(output_path, 'w', encoding='utf-8') as f:
         yaml.dump(config_dict, f, default_flow_style=False, sort_keys=False)
+

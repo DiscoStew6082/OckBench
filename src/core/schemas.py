@@ -60,6 +60,11 @@ class BenchmarkConfig(BaseModel):
     base_url: Optional[str] = Field(None)
     api_key: Optional[str] = Field(None)
 
+    # Explicit provenance, not the mutable advertised model label. Unknown stays
+    # None; never infer checkpoint identity from the model name or endpoint.
+    model_revision: Optional[str] = Field(None)
+    runtime_revision: Optional[str] = Field(None)
+
     temperature: float = Field(0.0, ge=0.0, le=2.0)
     max_output_tokens: Optional[int] = Field(None, gt=0)
     max_context_window: Optional[int] = Field(None, gt=0)
@@ -248,6 +253,7 @@ class ExperimentSummary(BaseModel):
 class ExperimentResult(BaseModel):
     schema_version: str = Field(default=SCHEMA_VERSION)
     config: BenchmarkConfig = Field(...)
+    run_inputs: Optional[Dict[str, Any]] = Field(None)
     results: List[EvaluationResult] = Field(...)
     summary: ExperimentSummary = Field(...)
 
@@ -277,3 +283,4 @@ class ExperimentResult(BaseModel):
             config.pop('reasoning_effort', None)
             config.pop('enable_thinking', None)
         return cls(**data)
+

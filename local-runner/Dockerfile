@@ -4,6 +4,8 @@ ARG OCKBENCH_SOURCE_REVISION=working-tree
 LABEL org.opencontainers.image.title="OckBench pinned local runner"
 LABEL org.opencontainers.image.revision="$OCKBENCH_SOURCE_REVISION"
 
+ENV OCKBENCH_SOURCE_REVISION=$OCKBENCH_SOURCE_REVISION
+
 ENV UV_PROJECT_ENVIRONMENT=/opt/ockbench/.venv \
     UV_LINK_MODE=copy \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -33,3 +35,4 @@ ENV PYTHONPATH=/opt/ockbench-local:/bench
 
 ENTRYPOINT ["/opt/ockbench/.venv/bin/python", "-m", "ockbench_local.main"]
 CMD ["--help"]
+

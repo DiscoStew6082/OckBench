@@ -155,3 +155,26 @@ python main.py --config configs/local.yaml --cache cache/qwen3-4b-math.jsonl
 If a run stops, rerun the same command with the same cache path. Completed
 problems are skipped automatically. Cache files are resume state; use completed
 JSON files in `results/` for analysis and reporting.
+
+
+### Content-bound resume
+
+A run captures the dataset bytes once and parses that same snapshot before
+opening its cache. The `run_inputs_v1` manifest records the dataset SHA-256,
+ordered loaded/selected-row SHA-256 (including IDs, answers and metadata), row
+count, and available model/runtime/benchmark revisions. Changing content at the
+same path, selected rows/order, or known revisions refuses resume before model
+generation. Duplicate selected problem IDs are rejected because cache entries
+are keyed by problem ID. The manifest is also retained in the result file.
+
+Old headers without RunInputs cannot prove their original dataset content and
+must use a fresh cache path. They are never silently stamped with today's hash
+or rewritten. Historical aggregation and result-file loading remain supported.
+There is no automatic migration from an unbound cache.
+
+`model` remains the endpoint's advertised label. When known, supply
+`model_revision` and `runtime_revision` in YAML; the local runner also accepts
+`OCKBENCH_MODEL_REVISION` and `OCKBENCH_RUNTIME_REVISION` (explicit config wins).
+Use revision/version identifiers only, never credentials. Unknown revisions are
+recorded as null, not inferred from the advertised label. These declarations do
+not attest immutable remote weights or detect a server changing mid-run.

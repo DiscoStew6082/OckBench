@@ -15,6 +15,7 @@ from ..models.base import BaseModelClient
 from ..utils.logger import get_experiment_filename, setup_logger
 from .cache import RunCache
 from .config import load_config
+from .identity import build_run_inputs
 from .schemas import BenchmarkConfig, EvaluationResult, ExperimentResult, ExperimentSummary, Problem, TokenUsage
 from .scoring import summarize
 
@@ -257,7 +258,9 @@ class BenchmarkRunner:
 
         logger.info("Loading dataset...")
         loader = get_loader(filepath=self.config.dataset_path)
-        self.problems = loader.load()
+        dataset_bytes = Path(self.config.dataset_path).read_bytes()
+        self.problems = loader.load(content=dataset_bytes)
+        run_inputs = build_run_inputs(self.config, dataset_bytes=dataset_bytes, problems=self.problems)
         logger.info(f"Loaded {len(self.problems)} problems")
 
         # Build the evaluator early so a missing/invalid config (e.g. math without
@@ -274,7 +277,7 @@ class BenchmarkRunner:
 
         try:
             if self.cache_path:
-                self.cache = RunCache.open(self.cache_path, self.config)
+                self.cache = RunCache.open(self.cache_path, self.config, run_inputs)
                 completed_ids = self.cache.completed_ids
                 # No evaluator-type gate: _is_rejudgable_error is the single
                 # arbiter of "recoverable without regeneration", and only
@@ -322,7 +325,8 @@ class BenchmarkRunner:
 
         dataset_name = self.config.dataset_name or Path(self.config.dataset_path).stem
         return ExperimentResult(
-            config=self.config, results=results, summary=summary, dataset_name=dataset_name,
+            config=self.config, run_inputs=run_inputs.to_dict(),
+            results=results, summary=summary, dataset_name=dataset_name,
         )
 
     def _log_summary(self, summary: ExperimentSummary) -> None:
@@ -369,3 +373,4 @@ def run_benchmark(
     logger.info(f"Results saved to: {result_file}")
 
     return experiment
+

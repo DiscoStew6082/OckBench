@@ -1,4 +1,5 @@
 """Data loaders for different dataset formats."""
+import io
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -9,7 +10,7 @@ from ..core.schemas import Problem
 
 class DataLoader(ABC):
     @abstractmethod
-    def load(self) -> List[Problem]:
+    def load(self, *, content: bytes | None = None) -> List[Problem]:
         pass
 
 
@@ -19,9 +20,11 @@ class JSONLDataLoader(DataLoader):
         if not self.filepath.exists():
             raise FileNotFoundError(f"Dataset file not found: {self.filepath}")
 
-    def load(self) -> List[Problem]:
+    def load(self, *, content: bytes | None = None) -> List[Problem]:
         problems = []
-        with open(self.filepath, 'r', encoding='utf-8') as f:
+        # Parse the exact bytes admitted into the run, with no second file read.
+        snapshot = self.filepath.read_bytes() if content is None else content
+        with io.StringIO(snapshot.decode('utf-8')) as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -44,9 +47,11 @@ class MBPPDataLoader(DataLoader):
         if not self.filepath.exists():
             raise FileNotFoundError(f"Dataset file not found: {self.filepath}")
 
-    def load(self) -> List[Problem]:
+    def load(self, *, content: bytes | None = None) -> List[Problem]:
         problems = []
-        with open(self.filepath, 'r', encoding='utf-8') as f:
+        # Parse the exact bytes admitted into the run, with no second file read.
+        snapshot = self.filepath.read_bytes() if content is None else content
+        with io.StringIO(snapshot.decode('utf-8')) as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -124,3 +129,4 @@ def get_loader(filepath: str, **kwargs) -> DataLoader:
     if 'mbpp' in filepath.lower():
         return MBPPDataLoader(filepath)
     return JSONLDataLoader(filepath)
+

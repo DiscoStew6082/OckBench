@@ -94,6 +94,8 @@ run_domain() {
 
   docker run --rm \
     --name "${container_name}" \
+    --env "OCKBENCH_MODEL_REVISION=${OCKBENCH_MODEL_REVISION:-}" \
+    --env "OCKBENCH_RUNTIME_REVISION=${runtime_revision}" \
     --read-only \
     --tmpfs /tmp:rw,size=512m,nosuid,nodev,noexec \
     --cap-drop ALL \
@@ -132,6 +134,13 @@ fi
 
 mkdir -p "${artifact_root}"
 source_revision=$(git -C "${repo_root}" rev-parse HEAD)
+# Record available version evidence; the served model id is not a checkpoint
+# revision. Supply OCKBENCH_MODEL_REVISION when the checkpoint revision is known.
+runtime_revision=${OCKBENCH_RUNTIME_REVISION:-$("${omlx_bin}" --version)}
+if [[ -z ${runtime_revision} ]]; then
+  print -u2 "Could not identify the oMLX runtime; set OCKBENCH_RUNTIME_REVISION."
+  exit 1
+fi
 
 print "Building ${image_name} from OckBench revision ${source_revision}."
 docker build \
@@ -162,3 +171,4 @@ if (( ${#failed_lanes[@]} > 0 )); then
   print -u2 "Lanes returning nonzero: ${failed_lanes[*]}"
   exit 1
 fi
+

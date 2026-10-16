@@ -43,3 +43,18 @@ completed rows from the per-lane caches after an interruption.
 The absolute model-call ceiling is 40 requests times 600 seconds, or 6 hours
 40 minutes, plus model loading, image-build, and coding-test overhead. This is
 a smoke comparison only, not an official Selected or leaderboard score.
+
+
+### Resume identity and revision evidence
+
+The Docker image passes its `OCKBENCH_SOURCE_REVISION` build argument into the
+benchmark's RunInputs manifest. The mini-smoke launcher also passes the local
+oMLX version output, or an explicit `OCKBENCH_RUNTIME_REVISION`, plus
+`OCKBENCH_MODEL_REVISION` when supplied. Set the latter to a known checkpoint
+revision or content digest; the model's advertised ID is only a label. A version
+string alone is not an immutable runtime build fingerprint; use the exact
+runtime commit/build digest when available.
+
+Dataset bytes and ordered loaded rows are always content-bound. Existing
+unbound caches require fresh paths; retain them for historical aggregation.
+No model/server requests are made by the offline identity tests.

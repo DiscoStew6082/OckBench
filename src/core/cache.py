@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple
 
-from .identity import compute_run_identity, diff_identity, identity_hash
+from .identity import RunInputs, compute_run_identity, diff_identity, identity_hash
 from .schemas import SCHEMA_VERSION, BenchmarkConfig, EvaluationResult, ExperimentSummary
 from .scoring import summarize
 
@@ -101,13 +101,13 @@ class RunCache:
         self._rejudgable_results: Dict[Any, EvaluationResult] = {}
 
     @classmethod
-    def open(cls, cache_path: str, config: BenchmarkConfig) -> "RunCache":
+    def open(cls, cache_path: str, config: BenchmarkConfig, run_inputs: RunInputs | None = None) -> "RunCache":
         """Open (or create) a cache for ``config``, verifying its identity.
 
         Raises ``CacheIdentityMismatch`` if an existing cache belongs to a run
         whose identity differs, naming exactly what changed.
         """
-        identity = compute_run_identity(config)
+        identity = compute_run_identity(config, run_inputs)
         ident_hash = identity_hash(identity)
         inst = cls(cache_path, identity, ident_hash)
         path = Path(cache_path)
@@ -120,6 +120,11 @@ class RunCache:
                     "use a fresh cache path"
                 )
             header = json.loads(lines[0])
+            if not header.get("identity", {}).get("run_inputs"):
+                raise CacheIdentityMismatch(
+                    f"cache '{cache_path}' predates content-bound RunInputs; use a fresh cache path. "
+                    "Historical results remain readable, but their original dataset bytes cannot be verified."
+                )
             if header.get("identity_hash") != ident_hash:
                 changed = diff_identity(header.get("identity", {}), identity)
                 raise CacheIdentityMismatch(
@@ -181,3 +186,4 @@ class RunCache:
     def aggregate(self, duration: float) -> Tuple[List[EvaluationResult], ExperimentSummary]:
         """Aggregate this cache's contents into (results, summary)."""
         return aggregate_cache_file(str(self.path), duration)
+
